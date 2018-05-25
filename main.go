@@ -11,6 +11,7 @@ import (
 var db *gorm.DB
 var err error
 
+// Article model
 type Article struct {
 	ID      uint   `json:"id"`
 	Title   string `json:"title"`
@@ -40,6 +41,7 @@ func main() {
 	router.Run()
 }
 
+// ArticleIndex func
 func ArticleIndex(c *gin.Context) {
 	var articles []Article
 	if err := db.Find(&articles).Error; err != nil {
@@ -50,6 +52,7 @@ func ArticleIndex(c *gin.Context) {
 	}
 }
 
+// ArticleCreate func
 func ArticleCreate(c *gin.Context) {
 	var article Article
 	c.BindJSON(&article)
@@ -58,6 +61,7 @@ func ArticleCreate(c *gin.Context) {
 	c.JSON(200, article)
 }
 
+// ArticleShow func
 func ArticleShow(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var article Article
@@ -70,6 +74,7 @@ func ArticleShow(c *gin.Context) {
 	}
 }
 
+// ArticleUpdate func
 func ArticleUpdate(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var article Article
@@ -84,6 +89,7 @@ func ArticleUpdate(c *gin.Context) {
 	c.JSON(200, article)
 }
 
+// ArticleDelete func
 func ArticleDelete(c *gin.Context) {
 	id := c.Params.ByName("id")
 	var article Article
