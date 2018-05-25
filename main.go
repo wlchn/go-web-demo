@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -9,12 +11,20 @@ import (
 var db *gorm.DB
 var err error
 
+type Article struct {
+	ID      uint   `json:"id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
 func main() {
 
 	db, err = gorm.Open("mysql", "root:@/go_web_demo?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		panic("failed to connect database")
 	}
+
+	db.AutoMigrate(&Article{})
 
 	router := gin.Default()
 
@@ -31,17 +41,53 @@ func main() {
 }
 
 func ArticleIndex(c *gin.Context) {
-	c.String(200, "Article Index")
+	var articles []Article
+	if err := db.Find(&articles).Error; err != nil {
+		c.AbortWithStatus(404)
+		fmt.Println(err)
+	} else {
+		c.JSON(200, articles)
+	}
 }
 
 func ArticleCreate(c *gin.Context) {
+	var article Article
+	c.BindJSON(&article)
+
+	db.Create(&article)
+	c.JSON(200, article)
 }
 
 func ArticleShow(c *gin.Context) {
+	id := c.Params.ByName("id")
+	var article Article
+
+	if err := db.First(&article, id); err != nil {
+		c.AbortWithStatus(404)
+		fmt.Println(err)
+	} else {
+		c.JSON(200, article)
+	}
 }
 
 func ArticleUpdate(c *gin.Context) {
+	id := c.Params.ByName("id")
+	var article Article
+
+	if err := db.First(&article, id); err != nil {
+		c.AbortWithStatus(404)
+		fmt.Println(err)
+	}
+
+	c.BindJSON(&article)
+	db.Save(&article)
+	c.JSON(200, article)
 }
 
 func ArticleDelete(c *gin.Context) {
+	id := c.Params.ByName("id")
+	var article Article
+	d := db.Where("id = ?", id).Delete(&article)
+	fmt.Println(d)
+	c.JSON(200, gin.H{"id #" + id: "deleted"})
 }
